@@ -80,6 +80,14 @@ fetch('https://randomuser.me/api')
     return data;
   }
 
+  const $form = document.getElementById('form');
+  const $home = document.getElementById('home');
+
+  $form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    $home.classList.add('search-active')
+  });
+
   const actionList = await getData('https://yts.am/api/v2/list_movies.json?genre=action')
   const dramaList = await getData('https://yts.am/api/v2/list_movies.json?genre=drama')
   const animationList = await getData('https://yts.am/api/v2/list_movies.json?genre=animation')
@@ -98,27 +106,41 @@ fetch('https://randomuser.me/api')
     ) 
   }
 
-  const $actionContainer = document.querySelector('#action');
-  const $dramaContainer = document.getElementById('#drama');
-  const $animationContainer = document.getElementById('#animation');
-
-    
-  actionList.data.movies.forEach((movie)=>{
-    debugger
-    const HTMLString = videoItemTemplate(movie);
+  function createTemplate(HTMLString) {
     const html = document.implementation.createHTMLDocument();
     html.body.innerHTML = HTMLString;
-    $actionContainer.append(html.body.children[0]);
-    // $actionContainer.innerHTML += HTMLString;
-  });
+    return html.body.children[0];
+  }
+
+  function addEventClick($element){
+    $element.addEventListener('click', () => {
+      showModal();
+    });
+  }
+
+  function renderMovieList(list, $container){
+    // actionList.data.movies
+    $container.children[0].remove();
+    list.forEach((movie)=>{
+      // debugger
+      const HTMLString = videoItemTemplate(movie);
+      const movieElement = createTemplate(HTMLString);
+      $container.append(movieElement);
+      addEventClick(movieElement);
+    });
+  };
 
 
+  const $actionContainer = document.querySelector('#action');
+  const $dramaContainer = document.getElementById('drama');
+  const $animationContainer = document.getElementById('animation');
+
+  renderMovieList(actionList.data.movies, $actionContainer);
+  renderMovieList(dramaList.data.movies, $dramaContainer);
+  renderMovieList(animationList.data.movies, $animationContainer);
 
 
-  const $featuringContainer = document.getElementById('#featuring');
-  const $form = document.getElementById('#form');
-  const $home = document.getElementById('#home');
-
+  const $featuringContainer = document.getElementById('featuring');
 
   // const $home = $('.home .list #item');
   const $modal = document.getElementById('modal');
@@ -128,4 +150,15 @@ fetch('https://randomuser.me/api')
   const $modalTitle = $modal.querySelector('h1');
   const $modalImage = $modal.querySelector('img');
   const $modalDescription = $modal.querySelector('p'); 
+
+  function showModal(){
+    $overlay.classList.add('active');
+    $modal.style.animation = 'modalIn .8s forwards';
+  }
+  $hideModal.addEventListener('click', hideModal);
+  
+  function hideModal() {
+    $overlay.classList.remove('active');
+    $modal.style.animation = 'modalOut .8s forwards';
+  }
 })()
