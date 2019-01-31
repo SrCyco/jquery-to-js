@@ -116,8 +116,12 @@ fetch('https://randomuser.me/api')
     });
     $featuringContainer.append($loader);
     const data =  new FormData($form);
-    const peli = await getData(`${BASE_API}list_movies.json?limit=1&query_term=${data.get('name')}`)
-    const HTMLString = featuringTemplate(peli.data.movies[0])
+    const {
+      data: {
+        movies: pelis
+      }
+    } = await getData(`${BASE_API}list_movies.json?limit=1&query_term=${data.get('name')}`)
+    const HTMLString = featuringTemplate(pelis[0])
     $featuringContainer.innerHTML = HTMLString;
     
   });
@@ -128,9 +132,9 @@ fetch('https://randomuser.me/api')
   const animationList = await getData(`${BASE_API}list_movies.json?genre=animation`)
   console.log(actionList, dramaList, animationList)
 
-  function videoItemTemplate(movie){
+  function videoItemTemplate(movie, category){
     return(
-      `<div class="primaryPlayListItem">
+      `<div class="primaryPlayListItem" data-id="${movie.id}" data-category="${category}">
         <div class="primaryPlayListItem-image">
           <img src="${movie.medium_cover_image}" />
         </div>
@@ -149,16 +153,16 @@ fetch('https://randomuser.me/api')
 
   function addEventClick($element){
     $element.addEventListener('click', () => {
-      showModal();
+      showModal($element);
     });
   }
 
-  function renderMovieList(list, $container){
+  function renderMovieList(list, $container, category){
     // actionList.data.movies
     $container.children[0].remove();
     list.forEach((movie)=>{
       // debugger
-      const HTMLString = videoItemTemplate(movie);
+      const HTMLString = videoItemTemplate(movie, category);
       const movieElement = createTemplate(HTMLString);
       $container.append(movieElement);
       addEventClick(movieElement);
@@ -170,9 +174,9 @@ fetch('https://randomuser.me/api')
   const $dramaContainer = document.getElementById('drama');
   const $animationContainer = document.getElementById('animation');
 
-  renderMovieList(actionList.data.movies, $actionContainer);
-  renderMovieList(dramaList.data.movies, $dramaContainer);
-  renderMovieList(animationList.data.movies, $animationContainer);
+  renderMovieList(actionList.data.movies, $actionContainer, 'action');
+  renderMovieList(dramaList.data.movies, $dramaContainer, 'drama');
+  renderMovieList(animationList.data.movies, $animationContainer, 'animation');
 
 
   
@@ -186,9 +190,11 @@ fetch('https://randomuser.me/api')
   const $modalImage = $modal.querySelector('img');
   const $modalDescription = $modal.querySelector('p'); 
 
-  function showModal(){
+  function showModal($element){
     $overlay.classList.add('active');
     $modal.style.animation = 'modalIn .8s forwards';
+    const id = $element.dataset.id;
+    const category = $element.dataset.category;
   }
   $hideModal.addEventListener('click', hideModal);
   
