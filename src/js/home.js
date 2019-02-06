@@ -299,22 +299,34 @@
     });
   };
 
+  async function cacheExist(category){
+    const listName = `${category}List`
+    const cacheList = window.localStorage.getItem(listName)
+    if(cacheList){
+      return JSON.parse(cacheList);
+    }
+    const {data: {movies: data}} = await getData(`${BASE_API}list_movies.json?genre=${category}`);
+    localStorage.setItem(listName, JSON.stringify(data));
+    return data;
+  }
+
   const {data: {movies: topTenList}} = await getData(`${BASE_API}list_movies.json?limit=10&sort_by=like_count`)
   $myTopTenContainer = document.querySelector('.myPlaylist');
   renderTopList(topTenList, $myTopTenContainer, 'top10');
 
-  const {data: {movies: actionList}} = await getData(`${BASE_API}list_movies.json?genre=action`)
-  localStorage.setItem('actionList', JSON.stringify(actionList));
+  // const {data: {movies: actionList}} = await getData(`${BASE_API}list_movies.json?genre=action`)
+  const actionList = await cacheExist('action')
+  // localStorage.setItem('actionList', JSON.stringify(actionList));
   const $actionContainer = document.querySelector('#action');
   renderMovieList(actionList, $actionContainer, 'action');
   
-  const {data: {movies: dramaList}} = await getData(`${BASE_API}list_movies.json?genre=drama`)
-  localStorage.setItem('dramaList', JSON.stringify(dramaList));
+  const dramaList = await cacheExist('drama')
+  // localStorage.setItem('dramaList', JSON.stringify(dramaList));
   const $dramaContainer = document.getElementById('drama');
   renderMovieList(dramaList, $dramaContainer, 'drama');
   
-  const {data: {movies: animationList}} = await getData(`${BASE_API}list_movies.json?genre=animation`)
-  localStorage.setItem('animationList', JSON.stringify(animationList));
+  const animationList = await cacheExist('animation')
+  // localStorage.setItem('animationList', JSON.stringify(animationList));
   const $animationContainer = document.getElementById('animation');
   renderMovieList(animationList, $animationContainer, 'animation');
 
