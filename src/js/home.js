@@ -329,14 +329,5 @@
   // localStorage.setItem('animationList', JSON.stringify(animationList));
   const $animationContainer = document.getElementById('animation');
   renderMovieList(animationList, $animationContainer, 'animation');
-
   
-  // const $home = $('.home .list #item');
-
-
-
-
-  
-
-
 })()
