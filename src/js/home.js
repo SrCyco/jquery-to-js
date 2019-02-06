@@ -76,8 +76,11 @@ fetch('https://randomuser.me/api')
   // animation
   async function getData(url) {
     const response = await fetch(url);
-    const data = await response.json()
-    return data;
+    const data = await response.json();
+    if(data.data.movie_count > 0){
+      return data;
+    }
+    throw new Error('No se encontró ningún resultado');
   }
 
   const $form = document.getElementById('form');
@@ -116,21 +119,24 @@ fetch('https://randomuser.me/api')
     });
     $featuringContainer.append($loader);
     const data =  new FormData($form);
-    const {
-      data: {
-        movies: pelis
-      }
-    } = await getData(`${BASE_API}list_movies.json?limit=1&query_term=${data.get('name')}`)
-    const HTMLString = featuringTemplate(pelis[0])
-    $featuringContainer.innerHTML = HTMLString;
+    try{
+      const {
+        data: {
+          movies: pelis
+        }
+      } = await getData(`${BASE_API}list_movies.json?limit=1&query_term=${data.get('name')}`)
+      const HTMLString = featuringTemplate(pelis[0])
+      $featuringContainer.innerHTML = HTMLString;
+    } catch (error){
+      alert(error.message);
+      $loader.remove();
+      $home.classList.remove('search-active');
+    }
     
   });
   
   
-  const actionList = await getData(`${BASE_API}list_movies.json?genre=action`)
-  const dramaList = await getData(`${BASE_API}list_movies.json?genre=drama`)
-  const animationList = await getData(`${BASE_API}list_movies.json?genre=animation`)
-  console.log(actionList, dramaList, animationList)
+  
 
   function videoItemTemplate(movie, category){
     return(
@@ -161,22 +167,29 @@ fetch('https://randomuser.me/api')
     // actionList.data.movies
     $container.children[0].remove();
     list.forEach((movie)=>{
-      // debugger
       const HTMLString = videoItemTemplate(movie, category);
       const movieElement = createTemplate(HTMLString);
       $container.append(movieElement);
+      const image = movieElement.querySelector('img');
+      image.addEventListener('load', (event) => {
+        event.srcElement.classList.add('fadeIn');
+      });
       addEventClick(movieElement);
     });
   };
-
-
+  const {data: {movies: actionList}} = await getData(`${BASE_API}list_movies.json?genre=action`)
   const $actionContainer = document.querySelector('#action');
-  const $dramaContainer = document.getElementById('drama');
-  const $animationContainer = document.getElementById('animation');
+  renderMovieList(actionList, $actionContainer, 'action');
 
-  renderMovieList(actionList.data.movies, $actionContainer, 'action');
-  renderMovieList(dramaList.data.movies, $dramaContainer, 'drama');
-  renderMovieList(animationList.data.movies, $animationContainer, 'animation');
+  const {data: {movies: dramaList}} = await getData(`${BASE_API}list_movies.json?genre=drama`)
+  const $dramaContainer = document.getElementById('drama');
+  renderMovieList(dramaList, $dramaContainer, 'drama');
+
+  const {data: {movies: animationList}} = await getData(`${BASE_API}list_movies.json?genre=animation`)
+  const $animationContainer = document.getElementById('animation');
+  renderMovieList(animationList, $animationContainer, 'animation');
+  
+
 
 
   
@@ -190,13 +203,41 @@ fetch('https://randomuser.me/api')
   const $modalImage = $modal.querySelector('img');
   const $modalDescription = $modal.querySelector('p'); 
 
+<<<<<<< HEAD
   
+=======
+  function findById(list, id){
+    return list.find(movie => movie.id === parseInt(id, 10));
+  }
+
+  function findMovie(id, category){
+    switch (category){
+      case 'action': {
+        return findById(actionList, id);
+      }
+      case 'drama': {
+        return findById(dramaList, id);
+      } 
+      default: {
+        return findById(animationList, id);
+      }
+    }
+  }
+
+>>>>>>> 892cb5b4bc35ee8539d5bee7661b1c68e75bd602
   function showModal($element){
     $overlay.classList.add('active');
     $modal.style.animation = 'modalIn .8s forwards';
     const id = $element.dataset.id;
     const category = $element.dataset.category;
+<<<<<<< HEAD
     const data = findMovie(id, category)
+=======
+    const data = findMovie(id, category);
+    $modalTitle.textContent  = data.title;
+    $modalImage.setAttribute('src', data.medium_cover_image);
+    $modalDescription.textContent = data.description_full;
+>>>>>>> 892cb5b4bc35ee8539d5bee7661b1c68e75bd602
   }
   $hideModal.addEventListener('click', hideModal);
   
